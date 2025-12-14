@@ -1,9 +1,9 @@
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser
-from post.models import Post, Tag, PostTag, Tahun, Comment, SuggestedTopic
+from post.models import Post, Tag, PostTag, Tahun, Comment, SuggestedTopic, PostLike
 from .serializers import PostCreateSerializer, PostDetailSerializer
 from django.contrib.auth.models import User
 from metadata.extractor import MetadataExtractor
@@ -276,6 +276,54 @@ class PostListView(APIView):
             )
 
 
+class PostListByUserView(APIView):
+    """
+    GET endpoint for listing posts by specific user ID
+    
+    URL: api/post/list/<user_id>/
+    
+    Returns all posts uploaded by a specific user
+    """
+    permission_classes = (AllowAny,)
+
+    def get(self, request, user_id):
+        """Get all posts by a specific user"""
+        try:
+            # Check if user exists
+            try:
+                user = User.objects.get(id=user_id)
+            except User.DoesNotExist:
+                return Response(
+                    {
+                        "success": False,
+                        "error": f"User with ID {user_id} not found"
+                    },
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            
+            # Get posts by user, ordered by newest first
+            posts = Post.objects.filter(uploader=user).order_by('-created_at')
+            
+            serializer = PostDetailSerializer(posts, many=True)
+            
+            return Response({
+                "success": True,
+                "user_id": user_id,
+                "username": user.username,
+                "count": posts.count(),
+                "posts": serializer.data
+            })
+            
+        except Exception as e:
+            return Response(
+                {
+                    "success": False,
+                    "error": str(e)
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
 class PostDetailView(APIView):
     """
     GET endpoint for individual post details
@@ -486,6 +534,194 @@ class TahunListView(APIView):
             print(f"✗ Error: {str(e)}")
             import traceback
             traceback.print_exc()
+            return Response({
+                "success": False,
+                "error": str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class PostLikeView(APIView):
+    """
+    POST endpoint to toggle like on a post
+    
+    URL: api/post/<post_id>/like/
+    
+    Requires authentication. Toggles like status (add if not exists, remove if exists)
+    
+    Response:
+    {
+        "success": true,
+        "action": "liked" or "unliked",
+        "post_id": 1,
+        "likes_count": 5
+    }
+    """
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request, post_id):
+        """Toggle like on a post"""
+        try:
+            # Check if post exists
+            try:
+                post = Post.objects.get(id=post_id)
+            except Post.DoesNotExist:
+                return Response(
+                    {
+                        "success": False,
+                        "error": "Post not found"
+                    },
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            
+            # Check if user already liked this post
+            like_exists = PostLike.objects.filter(user=request.user, post=post).exists()
+            
+            if like_exists:
+                # Unlike the post
+                PostLike.objects.filter(user=request.user, post=post).delete()
+                action = "unliked"
+            else:
+                # Like the post
+                PostLike.objects.create(user=request.user, post=post)
+                action = "liked"
+            
+            # Get current likes count
+            likes_count = PostLike.objects.filter(post=post).count()
+            
+            return Response({
+                "success": True,
+                "action": action,
+                "post_id": post_id,
+                "likes_count": likes_count
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response({
+                "success": False,
+                "error": str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class PostLikesCountView(APIView):
+    """
+    GET endpoint to get likes count for a post
+    
+    URL: api/post/<post_id>/likes/
+    
+    Returns the number of likes and whether current user (if authenticated) has liked it
+    
+    Response:
+    {
+        "success": true,
+        "post_id": 1,
+        "likes_count": 5,
+        "user_liked": true  // only if authenticated
+    }
+    """
+    permission_classes = (AllowAny,)
+
+    def get(self, request, post_id):
+        """Get likes count for a post"""
+        try:
+            # Check if post exists
+            try:
+                post = Post.objects.get(id=post_id)
+            except Post.DoesNotExist:
+                return Response(
+                    {
+                        "success": False,
+                        "error": "Post not found"
+                    },
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            
+            # Get likes count
+            likes_count = PostLike.objects.filter(post=post).count()
+            
+            # Check if user has liked (only if authenticated)
+            user_liked = False
+            if request.user.is_authenticated:
+                user_liked = PostLike.objects.filter(user=request.user, post=post).exists()
+            
+            response = {
+                "success": True,
+                "post_id": post_id,
+                "likes_count": likes_count
+            }
+            
+            if request.user.is_authenticated:
+                response["user_liked"] = user_liked
+            
+            return Response(response, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response({
+                "success": False,
+                "error": str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class PostLikesListView(APIView):
+    """
+    GET endpoint to get list of users who liked a post
+    
+    URL: api/post/<post_id>/likes/list/
+    
+    Response:
+    {
+        "success": true,
+        "post_id": 1,
+        "count": 2,
+        "users": [
+            {
+                "id": 1,
+                "username": "user1",
+                "email": "user1@example.com"
+            },
+            {
+                "id": 2,
+                "username": "user2",
+                "email": "user2@example.com"
+            }
+        ]
+    }
+    """
+    permission_classes = (AllowAny,)
+
+    def get(self, request, post_id):
+        """Get list of users who liked a post"""
+        try:
+            # Check if post exists
+            try:
+                post = Post.objects.get(id=post_id)
+            except Post.DoesNotExist:
+                return Response(
+                    {
+                        "success": False,
+                        "error": "Post not found"
+                    },
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            
+            # Get all users who liked this post
+            likes = PostLike.objects.filter(post=post).select_related('user')
+            users_data = [
+                {
+                    "id": like.user.id,
+                    "username": like.user.username,
+                    "email": like.user.email
+                }
+                for like in likes
+            ]
+            
+            return Response({
+                "success": True,
+                "post_id": post_id,
+                "count": len(users_data),
+                "users": users_data
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
             return Response({
                 "success": False,
                 "error": str(e)

@@ -7,8 +7,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.authtoken.models import Token
 from .serializers import (
-    UserSerializer, ProfileSerializer, RegisterSerializer,
-    UpdateProfilePictureSerializer, UpdateBioSerializer, UpdateUserInfoSerializer
+    UserSerializer, ProfileSerializer, RegisterSerializer
 )
 from timecapsule.models import Profile
 
@@ -62,11 +61,22 @@ class ProfileView(APIView):
 
     def put(self, request):
         profile, _ = Profile.objects.get_or_create(user=request.user)
-        serializer = ProfileSerializer(profile, data=request.data, partial=True)
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        serializer.save()
-        return Response(serializer.data)
+        
+        # Only allow updating: user (read-only), bio, profile_picture
+        update_data = {}
+        if 'bio' in request.data:
+            update_data['bio'] = request.data.get('bio')
+        if 'profile_picture' in request.FILES:
+            update_data['profile_picture'] = request.FILES.get('profile_picture')
+        
+        if update_data:
+            serializer = ProfileSerializer(profile, data=update_data, partial=True)
+            if not serializer.is_valid():
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            serializer.save()
+        
+        # Return the profile
+        return Response(ProfileSerializer(profile).data)
 
 
 class PublicProfileView(APIView):
@@ -127,231 +137,4 @@ class ProfileByIdView(APIView):
             )
 
 
-class UpdateProfilePictureView(APIView):
-    """
-    PUT endpoint to update user profile picture
-    
-    Request (multipart/form-data):
-    {
-        "profile_picture": <image_file>
-    }
-    
-    Response:
-    {
-        "success": true,
-        "message": "Profile picture updated successfully",
-        "profile_picture": "url/to/image"
-    }
-    """
-    permission_classes = (IsAuthenticated,)
-    parser_classes = (MultiPartParser, FormParser)
-    
-    def put(self, request):
-        try:
-            profile, _ = Profile.objects.get_or_create(user=request.user)
-            serializer = UpdateProfilePictureSerializer(profile, data=request.data, partial=True)
-            
-            if not serializer.is_valid():
-                return Response({
-                    "success": False,
-                    "errors": serializer.errors
-                }, status=status.HTTP_400_BAD_REQUEST)
-            
-            serializer.save()
-            
-            return Response({
-                "success": True,
-                "message": "Profile picture updated successfully",
-                "profile_picture": profile.profile_picture.url if profile.profile_picture else None
-            }, status=status.HTTP_200_OK)
-            
-        except Exception as e:
-            return Response({
-                "success": False,
-                "error": str(e)
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-
-class UpdateBioView(APIView):
-    """
-    PUT endpoint to update user bio
-    
-    Request:
-    {
-        "bio": "This is my new bio"
-    }
-    
-    Response:
-    {
-        "success": true,
-        "message": "Bio updated successfully",
-        "bio": "This is my new bio"
-    }
-    """
-    permission_classes = (IsAuthenticated,)
-    
-    def put(self, request):
-        try:
-            profile, _ = Profile.objects.get_or_create(user=request.user)
-            serializer = UpdateBioSerializer(profile, data=request.data, partial=True)
-            
-            if not serializer.is_valid():
-                return Response({
-                    "success": False,
-                    "errors": serializer.errors
-                }, status=status.HTTP_400_BAD_REQUEST)
-            
-            serializer.save()
-            
-            return Response({
-                "success": True,
-                "message": "Bio updated successfully",
-                "bio": profile.bio
-            }, status=status.HTTP_200_OK)
-            
-        except Exception as e:
-            return Response({
-                "success": False,
-                "error": str(e)
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-class UpdateUserInfoView(APIView):
-    """
-    PUT endpoint to update user information (name, email)
-    
-    Request:
-    {
-        "first_name": "John",
-        "last_name": "Doe",
-        "email": "john@example.com"
-    }
-    
-    Response:
-    {
-        "success": true,
-        "message": "User information updated successfully",
-        "user": {
-            "id": 15,
-            "username": "johndoe",
-            "first_name": "John",
-            "last_name": "Doe",
-            "email": "john@example.com"
-        }
-    }
-    """
-    permission_classes = (IsAuthenticated,)
-    
-    def put(self, request):
-        try:
-            serializer = UpdateUserInfoSerializer(request.user, data=request.data, partial=True)
-            
-            if not serializer.is_valid():
-                return Response({
-                    "success": False,
-                    "errors": serializer.errors
-                }, status=status.HTTP_400_BAD_REQUEST)
-            
-            serializer.save()
-            
-            return Response({
-                "success": True,
-                "message": "User information updated successfully",
-                "user": {
-                    "id": request.user.id,
-                    "username": request.user.username,
-                    "first_name": request.user.first_name,
-                    "last_name": request.user.last_name,
-                    "email": request.user.email
-                }
-            }, status=status.HTTP_200_OK)
-            
-        except Exception as e:
-            return Response({
-                "success": False,
-                "error": str(e)
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-class UpdateFullProfileView(APIView):
-    """
-    PUT endpoint to update entire profile at once (bio, name, email, profile picture)
-    
-    Request (multipart/form-data):
-    {
-        "bio": "My bio",
-        "first_name": "John",
-        "last_name": "Doe",
-        "email": "john@example.com",
-        "profile_picture": <image_file>
-    }
-    
-    Response:
-    {
-        "success": true,
-        "message": "Profile updated successfully",
-        "profile": {
-            "user": {...},
-            "bio": "My bio",
-            "profile_picture": "url/to/image",
-            "updated_at": "2025-12-14T..."
-        }
-    }
-    """
-    permission_classes = (IsAuthenticated,)
-    parser_classes = (MultiPartParser, FormParser)
-    
-    def put(self, request):
-        try:
-            profile, _ = Profile.objects.get_or_create(user=request.user)
-            
-            # Update user info
-            user_data = {}
-            if 'first_name' in request.data:
-                user_data['first_name'] = request.data.get('first_name')
-            if 'last_name' in request.data:
-                user_data['last_name'] = request.data.get('last_name')
-            if 'email' in request.data:
-                user_data['email'] = request.data.get('email')
-            
-            if user_data:
-                user_serializer = UpdateUserInfoSerializer(request.user, data=user_data, partial=True)
-                if not user_serializer.is_valid():
-                    return Response({
-                        "success": False,
-                        "errors": user_serializer.errors
-                    }, status=status.HTTP_400_BAD_REQUEST)
-                user_serializer.save()
-            
-            # Update profile info
-            profile_data = {}
-            if 'bio' in request.data:
-                profile_data['bio'] = request.data.get('bio')
-            if 'profile_picture' in request.FILES:
-                profile_data['profile_picture'] = request.FILES.get('profile_picture')
-            
-            if profile_data:
-                profile_serializer = ProfileSerializer(profile, data=profile_data, partial=True)
-                if not profile_serializer.is_valid():
-                    return Response({
-                        "success": False,
-                        "errors": profile_serializer.errors
-                    }, status=status.HTTP_400_BAD_REQUEST)
-                profile_serializer.save()
-            
-            # Return updated profile
-            updated_profile = ProfileSerializer(profile)
-            
-            return Response({
-                "success": True,
-                "message": "Profile updated successfully",
-                "profile": updated_profile.data
-            }, status=status.HTTP_200_OK)
-            
-        except Exception as e:
-            import traceback
-            traceback.print_exc()
-            return Response({
-                "success": False,
-                "error": str(e)
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

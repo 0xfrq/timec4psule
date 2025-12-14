@@ -1,10 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate, useLocation, useParams } from "react-router-dom";
 import "remixicon/fonts/remixicon.css";
 import Swal from "sweetalert2";
 import { useSession } from "../context/SessionContext";
 
-export default function Feed() {
+export default function PostView() {
+  const { id } = useParams(); // ✅ /postview/:id
+  const postIdParam = useMemo(() => String(id || "").trim(), [id]);
+
   const { user, token, logout } = useSession();
   const navigate = useNavigate();
   const location = useLocation();
@@ -12,7 +15,7 @@ export default function Feed() {
 
   const REQUIRE_TOKEN_FOR_LIST = false;
 
-  // ===== query param: tahun
+  // ===== query param: tahun (biar badge tetap konsisten, walau postview)
   const tahunParam = useMemo(() => {
     const sp = new URLSearchParams(location.search);
     const raw = (sp.get("tahun") ?? "0").trim();
@@ -31,8 +34,7 @@ export default function Feed() {
   const listFetchedRef = useRef(false);
 
   // ===== State
-  // NOTE: tetap pakai nama "videos" agar algoritma yang sudah ada tidak berubah,
-  // tapi isinya sekarang bisa video + photo.
+  // NOTE: tetap pakai nama "videos" biar mekanisme existing aman
   const [videos, setVideos] = useState([]);
   const [activeVideoId, setActiveVideoId] = useState("");
 
@@ -45,6 +47,7 @@ export default function Feed() {
   const [likedByPost, setLikedByPost] = useState({});
   const [likeCountByPost, setLikeCountByPost] = useState({});
 
+  // (postview tidak butuh infinite, tapi dibiarkan aman)
   const [nextCursor, setNextCursor] = useState(null);
   const [loadingMore, setLoadingMore] = useState(false);
   const lockAppendRef = useRef(false);
@@ -97,7 +100,6 @@ export default function Feed() {
   const setVideoRef = useCallback((id) => {
     return (el) => {
       if (!id) return;
-      // VIDEO ONLY: kalau photo, ref ini tidak dipakai.
       if (el) videoElMapRef.current.set(String(id), el);
       else videoElMapRef.current.delete(String(id));
     };
@@ -165,7 +167,7 @@ export default function Feed() {
     [apiBase, authHeaders, handle401, profileNameById]
   );
 
-  // ===== Comments list (GET)
+  // ===== Comments list (GET) (JANGAN UBAH)
   const fetchComments = useCallback(
     async (postId) => {
       if (!postId || !apiBase) return;
@@ -188,7 +190,7 @@ export default function Feed() {
     [apiBase, authHeaders, handle401]
   );
 
-  // ===== Topics list (GET) (tetap)
+  // ===== Topics list (GET) (JANGAN UBAH)
   const fetchTopics = useCallback(
     async (postId) => {
       if (!postId || !apiBase) return;
@@ -211,8 +213,8 @@ export default function Feed() {
     [apiBase, authHeaders, handle401]
   );
 
-  // ✅ reset state ketika tahun berubah
-  const resetFeedStateForYear = useCallback(() => {
+  // ✅ reset state ketika ganti postId
+  const resetStateForPost = useCallback(() => {
     setVideos([]);
     setActiveVideoId("");
     setCommentsByPost({});
@@ -232,12 +234,14 @@ export default function Feed() {
   }, []);
 
   useEffect(() => {
-    resetFeedStateForYear();
-  }, [tahunParam, resetFeedStateForYear]);
+    resetStateForPost();
+  }, [postIdParam, resetStateForPost]);
 
-  // ===== Load list videos + photos (TAMBAH FITUR PHOTO, TANPA UBAH LOGIKA LIKE/COMMENT)
+  // ===== Load SINGLE post detail
+  // Endpoint: /api/post/<int:post_id>/
   useEffect(() => {
     if (!apiBase) return;
+    if (!postIdParam) return;
     if (REQUIRE_TOKEN_FOR_LIST && !rawToken) return;
     if (listFetchedRef.current) return;
 
@@ -245,7 +249,7 @@ export default function Feed() {
 
     (async () => {
       try {
-        const res = await fetch(`${apiBase}/api/post/list/?tahun=${encodeURIComponent(tahunParam)}`, {
+        const res = await fetch(`${apiBase}/api/post/${encodeURIComponent(postIdParam)}/`, {
           headers: authHeaders,
         });
 
@@ -255,73 +259,57 @@ export default function Feed() {
         }
         if (!res.ok) {
           listFetchedRef.current = false;
-          throw new Error(`Error load feed: ${res.status}`);
+          throw new Error(`Error load post: ${res.status}`);
         }
 
         const data = await res.json();
-        const items = Array.isArray(data.posts) ? data.posts : [];
 
-        // ✅ sebelumnya hanya video, sekarang video + photo
-        const mapped = items
-          .filter((p) => {
-            const mt = String(p.media_type || "").toLowerCase();
-            return mt === "video" || mt === "photo";
-          })
-          .map((p) => {
-            const uploaderId = getUploaderId(p);
-            const media_type = String(p.media_type || "").toLowerCase(); // "video"|"photo"
-            return {
-              id: String(p.id),
-              uploaderId,
-              media_type,
-              src: buildMediaUrl(p.url),
-              title: p.description || `${media_type} #${p.id}`,
-              caption: p.description || "",
-              year: normalizeYearValue(p),
-              likes: typeof p.likes_count === "number" ? p.likes_count : 0,
-            };
-          })
-          .filter((v) => !!v.src);
+        // data bisa berupa {success, post:{...}} atau langsung {...}
+        const p = data?.post ?? data?.data ?? data;
+
+        const media_type = String(p?.media_type || "").toLowerCase(); // video/photo
+        const uploaderId = getUploaderId(p);
+
+        const mapped = [
+          {
+            id: String(p?.id ?? postIdParam),
+            uploaderId,
+            media_type,
+            src: buildMediaUrl(p?.url),
+            title: p?.description || `${media_type || "post"} #${p?.id ?? postIdParam}`,
+            caption: p?.description || "",
+            year: normalizeYearValue(p),
+            likes: typeof p?.likes_count === "number" ? p.likes_count : 0,
+          },
+        ].filter((x) => !!x.src);
 
         setVideos(mapped);
-
-        const firstId = mapped[0]?.id || "";
-        setActiveVideoId(firstId);
+        setActiveVideoId(String(p?.id ?? postIdParam));
 
         // init like count dari backend
         const initLikes = {};
         mapped.forEach((v) => (initLikes[v.id] = v.likes || 0));
         setLikeCountByPost(initLikes);
 
-        setNextCursor(data.nextCursor ?? null);
-
-        // batch fetch username uploader
-        const uniqUploaderIds = Array.from(new Set(mapped.map((v) => v.uploaderId).filter(Boolean)));
-        uniqUploaderIds.forEach((uid) => fetchProfileName(uid));
+        if (uploaderId) fetchProfileName(uploaderId);
       } catch (e) {
         console.error(e);
       }
     })();
   }, [
     apiBase,
+    postIdParam,
     rawToken,
     REQUIRE_TOKEN_FOR_LIST,
     authHeaders,
-    buildMediaUrl,
     handle401,
-    tahunParam,
+    buildMediaUrl,
     normalizeYearValue,
     getUploaderId,
     fetchProfileName,
   ]);
 
-  // fetch profile untuk item baru
-  useEffect(() => {
-    const ids = Array.from(new Set(videos.map((v) => v.uploaderId).filter(Boolean)));
-    ids.forEach((uid) => fetchProfileName(uid));
-  }, [videos, fetchProfileName]);
-
-  // ===== Snap tracking (tetap sama)
+  // ===== Snap tracking (tetap, aman walau cuma 1 item)
   useEffect(() => {
     const root = feedRef.current;
     if (!root || !videos.length) return;
@@ -360,7 +348,7 @@ export default function Feed() {
     return () => obs.disconnect();
   }, [videos, activeVideoId]);
 
-  // ===== Autoplay active only (VIDEO ONLY - tidak ganggu photo)
+  // ===== Autoplay active only (VIDEO ONLY)
   useEffect(() => {
     if (!activeVideoId) return;
     for (const [id, el] of videoElMapRef.current.entries()) {
@@ -370,7 +358,7 @@ export default function Feed() {
     }
   }, [activeVideoId]);
 
-  // ===== Fetch topics/comments once per active post (tetap)
+  // ===== Fetch topics/comments once per active post (JANGAN UBAH)
   useEffect(() => {
     if (!activeVideoId) return;
     const pid = String(activeVideoId);
@@ -473,84 +461,8 @@ export default function Feed() {
     }
   };
 
-  // ===== Infinite scroll (sekarang load video+photo, tanpa ubah logika like/comment)
-  const handleScroll = useCallback(() => {
-    const el = feedRef.current;
-    if (!el || lockAppendRef.current || loadingMore) return;
-
-    const nearBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 120;
-    if (!nearBottom || !nextCursor) return;
-
-    lockAppendRef.current = true;
-    setLoadingMore(true);
-
-    (async () => {
-      try {
-        const res = await fetch(
-          `${apiBase}/api/post/list/?tahun=${encodeURIComponent(tahunParam)}&cursor=${encodeURIComponent(nextCursor)}`,
-          { headers: authHeaders }
-        );
-        if (res.status === 401 || res.status === 403) return handle401();
-        if (!res.ok) throw new Error("Error load more");
-
-        const data = await res.json();
-        const items = Array.isArray(data.posts) ? data.posts : [];
-
-        // ✅ sebelumnya hanya video, sekarang video + photo
-        const newItems = items
-          .filter((p) => {
-            const mt = String(p.media_type || "").toLowerCase();
-            return mt === "video" || mt === "photo";
-          })
-          .map((p) => {
-            const uploaderId = getUploaderId(p);
-            const media_type = String(p.media_type || "").toLowerCase();
-            return {
-              id: String(p.id),
-              uploaderId,
-              media_type,
-              src: buildMediaUrl(p.url),
-              title: p.description || `${media_type} #${p.id}`,
-              caption: p.description || "",
-              year: normalizeYearValue(p),
-              likes: typeof p.likes_count === "number" ? p.likes_count : 0,
-            };
-          })
-          .filter((v) => !!v.src);
-
-        setVideos((prev) => [...prev, ...newItems]);
-        setNextCursor(data.nextCursor ?? null);
-
-        const uniqUploaderIds = Array.from(new Set(newItems.map((v) => v.uploaderId).filter(Boolean)));
-        uniqUploaderIds.forEach((uid) => fetchProfileName(uid));
-
-        // init likes for new items
-        setLikeCountByPost((prev) => {
-          const next = { ...prev };
-          newItems.forEach((v) => {
-            if (next[v.id] == null) next[v.id] = v.likes || 0;
-          });
-          return next;
-        });
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoadingMore(false);
-        setTimeout(() => (lockAppendRef.current = false), 200);
-      }
-    })();
-  }, [
-    apiBase,
-    authHeaders,
-    buildMediaUrl,
-    nextCursor,
-    loadingMore,
-    tahunParam,
-    normalizeYearValue,
-    getUploaderId,
-    fetchProfileName,
-    handle401,
-  ]);
+  // PostView tidak perlu infinite, tapi keep aman (no-op karena nextCursor null)
+  const handleScroll = useCallback(() => {}, []);
 
   const pid = String(activeVideoId || "");
   const activeTopics = topicsByPost[pid] || [];
@@ -565,20 +477,15 @@ export default function Feed() {
             <div className="grid h-9 w-9 place-items-center rounded-xl border border-slate-200 bg-slate-100">
               <i className="ri-play-circle-fill text-xl text-slate-900" />
             </div>
-            <span className="text-lg">Feed</span>
+            <span className="text-lg">Post View</span>
+
             <span className="ml-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-bold ring-1 ring-slate-200 text-slate-700">
+              id: {postIdParam || "-"}
+            </span>
+
+            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold ring-1 ring-slate-200 text-slate-700">
               tahun: {tahunParam}
             </span>
-          </div>
-
-          <div className="ml-2 hidden flex-1 items-center md:flex">
-            <div className="flex w-full max-w-xl items-center gap-2 rounded-full bg-slate-100 px-4 py-2.5 ring-1 ring-slate-200 focus-within:ring-slate-300">
-              <i className="ri-search-line text-lg text-slate-500" />
-              <input
-                className="w-full bg-transparent text-sm outline-none placeholder:text-slate-500"
-                placeholder="Search"
-              />
-            </div>
           </div>
 
           <div className="ml-auto flex items-center gap-2">
@@ -586,33 +493,14 @@ export default function Feed() {
               to={`/feed?tahun=${encodeURIComponent(tahunParam)}`}
               className="rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold ring-1 ring-slate-200 hover:bg-slate-200"
             >
-              Home
-            </Link>
-            <Link
-              to="/faq"
-              className="rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold ring-1 ring-slate-200 hover:bg-slate-200"
-            >
-              Setting
-            </Link>
-            <Link
-              to="/dashboard"
-              className="rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold ring-1 ring-slate-200 hover:bg-slate-200"
-            >
-              Profile
-            </Link>
-            <Link
-              to="/UploadVideo"
-              className="rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold ring-1 ring-slate-200 hover:bg-slate-200"
-            >
-              Upload Video
+              Back to Feed
             </Link>
 
             <div className="mx-2 hidden h-8 w-px bg-slate-200 sm:block" />
 
             <div className="hidden items-center gap-2 sm:flex">
               <div className="text-xs text-slate-600">
-                Halo, <b className="text-slate-900">{user?.username}</b> •{" "}
-                <span className="text-slate-500">Post ID: {activeVideoId || "-"}</span>
+                Halo, <b className="text-slate-900">{user?.username}</b>
               </div>
               <button
                 onClick={logout}
@@ -627,7 +515,7 @@ export default function Feed() {
 
       {/* MAIN */}
       <div className="mx-auto flex h-[calc(100vh-4rem)] max-w-[1400px] gap-6 px-6 py-6">
-        {/* LEFT: TOPICS */}
+        {/* LEFT: TOPICS (JANGAN UBAH TAMPILAN) */}
         <aside className="hidden w-[340px] shrink-0 lg:block">
           <div className="flex h-full flex-col rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
             <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
@@ -640,10 +528,7 @@ export default function Feed() {
                 <div className="text-sm text-slate-500">Loading topics…</div>
               ) : activeTopics.length ? (
                 activeTopics.map((t) => (
-                  <div
-                    key={t.id}
-                    className="rounded-2xl bg-slate-50 p-3 ring-1 ring-slate-200 hover:bg-slate-100"
-                  >
+                  <div key={t.id} className="rounded-2xl bg-slate-50 p-3 ring-1 ring-slate-200 hover:bg-slate-100">
                     <div className="text-sm font-bold">{t.topic}</div>
                     <div className="mt-1 text-xs leading-relaxed text-slate-600">{t.desc}</div>
                   </div>
@@ -655,7 +540,7 @@ export default function Feed() {
           </div>
         </aside>
 
-        {/* CENTER: FEED (video + photo) */}
+        {/* CENTER: POST (video + photo) */}
         <main className="flex min-w-0 flex-1 justify-center">
           <div className="w-full max-w-[520px]">
             <div
@@ -667,7 +552,7 @@ export default function Feed() {
               <div className="tiktok-scroll">
                 {!videos.length ? (
                   <div className="p-4 text-sm text-slate-600">
-                    Tidak ada post. Cek response <b>/api/post/list/?tahun={tahunParam}</b>.
+                    Post tidak ditemukan / belum ter-load. Endpoint: <b>/api/post/{postIdParam}/</b>
                   </div>
                 ) : (
                   videos.map((v) => {
@@ -691,13 +576,9 @@ export default function Feed() {
                         style={{ scrollSnapStop: "always" }}
                       >
                         <div className="relative h-[calc(100vh-4rem-3rem)] w-full bg-slate-900">
-                          <div
-                            className={`pointer-events-none absolute inset-0 ${
-                              isActive ? "ring-2 ring-yellow-400" : "ring-1 ring-white/10"
-                            }`}
-                          />
+                          <div className={`pointer-events-none absolute inset-0 ${isActive ? "ring-2 ring-yellow-400" : "ring-1 ring-white/10"}`} />
 
-                          {/* ✅ MEDIA */}
+                          {/* MEDIA */}
                           {isVideo ? (
                             <video
                               ref={setVideoRef(v.id)}
@@ -749,7 +630,7 @@ export default function Feed() {
                           </div>
 
                           <div className="absolute right-3 top-1/2 -translate-y-1/2 space-y-3">
-                            {/* ✅ LIKE API (TIDAK DIUBAH) */}
+                            {/* ✅ LIKE API (JANGAN DIUBAH) */}
                             <button
                               className={[
                                 "grid h-12 w-12 place-items-center rounded-full ring-1 ring-white/25 backdrop-blur transition",
@@ -762,11 +643,7 @@ export default function Feed() {
                               }}
                               title="Like"
                             >
-                              <i
-                                className={
-                                  isLiked ? "ri-heart-fill text-xl text-white" : "ri-heart-line text-xl text-white"
-                                }
-                              />
+                              <i className={isLiked ? "ri-heart-fill text-xl text-white" : "ri-heart-line text-xl text-white"} />
                             </button>
                             <div className="text-center text-[11px] text-white/85">{likeCount || 0}</div>
 
@@ -805,7 +682,7 @@ export default function Feed() {
           </div>
         </main>
 
-        {/* RIGHT: COMMENTS */}
+        {/* RIGHT: COMMENTS (JANGAN UBAH TAMPILAN) */}
         <aside className="w-[380px] shrink-0">
           <div className="flex h-full flex-col rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
             <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
@@ -866,7 +743,7 @@ export default function Feed() {
         </aside>
       </div>
 
-      {/* ✅ Styles: hide scrollbar but keep scroll working */}
+      {/* Styles: hide scrollbar but keep scroll working */}
       <style>{`
         html, body, #root { height: 100%; }
         body { margin: 0; background: #f8fafc; }

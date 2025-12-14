@@ -21,6 +21,8 @@ import Past from "./pages/Past";
 import Curent from "./pages/Curent";
 import Future from "./pages/Future";
 
+// ✅ tambah ini
+import PostView from "./pages/PostView";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import { useSession } from "./context/SessionContext";
@@ -36,7 +38,6 @@ function IndexRedirect() {
 export default function App() {
   return (
     <Routes>
-
       {/* ROOT */}
       <Route path="/" element={<IndexRedirect />} />
 
@@ -90,6 +91,16 @@ export default function App() {
         element={
           <ProtectedRoute>
             <Feed />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* ✅ tambah route ini */}
+      <Route
+        path="/postview/:id"
+        element={
+          <ProtectedRoute>
+            <PostView />
           </ProtectedRoute>
         }
       />
@@ -206,7 +217,6 @@ export default function App() {
           404
       ====================== */}
       <Route path="*" element={<Navigate to="/" replace />} />
-
     </Routes>
   );
 }

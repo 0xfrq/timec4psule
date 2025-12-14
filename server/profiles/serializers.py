@@ -19,27 +19,7 @@ class ProfileSerializer(serializers.ModelSerializer):
             "user",
             "profile_picture",
             "bio",
-            "created_at",
-            "updated_at",
         )
-
-
-class UpdateProfilePictureSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Profile
-        fields = ("profile_picture",)
-
-
-class UpdateBioSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Profile
-        fields = ("bio",)
-
-
-class UpdateUserInfoSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ("first_name", "last_name", "email")
 
 
 class RegisterSerializer(serializers.Serializer):
