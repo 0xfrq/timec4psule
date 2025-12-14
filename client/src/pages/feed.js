@@ -581,7 +581,7 @@ export default function Feed() {
               Back
             </button>
             <Link
-              to={`/feed?tahun=${encodeURIComponent(tahunParam)}`}
+              to="/Timeline"
               className="rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold ring-1 ring-slate-200 hover:bg-slate-200"
             >
               Home
