@@ -46,6 +46,7 @@ export default function PostView() {
 
   const [likedByPost, setLikedByPost] = useState({});
   const [likeCountByPost, setLikeCountByPost] = useState({});
+  const [mutedByPost, setMutedByPost] = useState({});
 
   // (postview tidak butuh infinite, tapi dibiarkan aman)
   const [nextCursor, setNextCursor] = useState(null);
@@ -669,6 +670,34 @@ export default function PostView() {
                             >
                               <i className="ri-share-forward-line text-xl text-white" />
                             </button>
+
+                            {isVideo && (
+                              <button
+                                className="grid h-12 w-12 place-items-center rounded-full bg-white/15 ring-1 ring-white/25 backdrop-blur hover:bg-white/25"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const postId = String(v.id);
+                                  const newMutedState = !mutedByPost[postId];
+                                  setMutedByPost((prev) => ({
+                                    ...prev,
+                                    [postId]: newMutedState,
+                                  }));
+                                  const videoEl = videoElMapRef.current.get(postId);
+                                  if (videoEl) {
+                                    videoEl.muted = newMutedState;
+                                  }
+                                }}
+                                title={mutedByPost[String(v.id)] ? "Unmute" : "Mute"}
+                              >
+                                <i
+                                  className={`text-xl text-white ${
+                                    mutedByPost[String(v.id)]
+                                      ? "ri-volume-off-line"
+                                      : "ri-volume-up-line"
+                                  }`}
+                                />
+                              </button>
+                            )}
                           </div>
                         </div>
                       </section>

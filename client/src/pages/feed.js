@@ -44,6 +44,7 @@ export default function Feed() {
 
   const [likedByPost, setLikedByPost] = useState({});
   const [likeCountByPost, setLikeCountByPost] = useState({});
+  const [mutedByPost, setMutedByPost] = useState({});
 
   const [nextCursor, setNextCursor] = useState(null);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -571,17 +572,14 @@ export default function Feed() {
             </span>
           </div>
 
-          <div className="ml-2 hidden flex-1 items-center md:flex">
-            <div className="flex w-full max-w-xl items-center gap-2 rounded-full bg-slate-100 px-4 py-2.5 ring-1 ring-slate-200 focus-within:ring-slate-300">
-              <i className="ri-search-line text-lg text-slate-500" />
-              <input
-                className="w-full bg-transparent text-sm outline-none placeholder:text-slate-500"
-                placeholder="Search"
-              />
-            </div>
-          </div>
-
           <div className="ml-auto flex items-center gap-2">
+            <button
+              onClick={() => navigate(-1)}
+              className="inline-flex items-center gap-2 rounded-full bg-slate-200 px-4 py-2 text-sm font-extrabold text-slate-900 hover:bg-slate-300"
+            >
+              <i className="ri-arrow-left-line" />
+              Back
+            </button>
             <Link
               to={`/feed?tahun=${encodeURIComponent(tahunParam)}`}
               className="rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold ring-1 ring-slate-200 hover:bg-slate-200"
@@ -792,6 +790,34 @@ export default function Feed() {
                             >
                               <i className="ri-share-forward-line text-xl text-white" />
                             </button>
+
+                            {isVideo && (
+                              <button
+                                className="grid h-12 w-12 place-items-center rounded-full bg-white/15 ring-1 ring-white/25 backdrop-blur hover:bg-white/25"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const postId = String(v.id);
+                                  const newMutedState = !mutedByPost[postId];
+                                  setMutedByPost((prev) => ({
+                                    ...prev,
+                                    [postId]: newMutedState,
+                                  }));
+                                  const videoEl = videoElMapRef.current.get(postId);
+                                  if (videoEl) {
+                                    videoEl.muted = newMutedState;
+                                  }
+                                }}
+                                title={mutedByPost[String(v.id)] ? "Unmute" : "Mute"}
+                              >
+                                <i
+                                  className={`text-xl text-white ${
+                                    mutedByPost[String(v.id)]
+                                      ? "ri-volume-off-line"
+                                      : "ri-volume-up-line"
+                                  }`}
+                                />
+                              </button>
+                            )}
                           </div>
                         </div>
                       </section>

@@ -101,8 +101,6 @@ export default function SettingPage() {
                 </div>
 
                 <div className="flex-1 min-h-0 overflow-auto p-4 space-y-3">
-                  <TabBtn id="display" label="Display" />
-                  <TabBtn id="account" label="Account" />
                   <TabBtn id="faq" label="FAQ" />
                   <TabBtn id="contact" label="Contact Us" />
                 </div>
@@ -115,14 +113,10 @@ export default function SettingPage() {
                 {/* Header */}
                 <div className="shrink-0 border-b border-slate-200 px-6 py-4">
                   <div className="text-lg font-extrabold">
-                    {activePage === "display" && "Display"}
-                    {activePage === "account" && "Account"}
                     {activePage === "faq" && "Frequently Asked Questions"}
                     {activePage === "contact" && "Contact Us"}
                   </div>
                   <div className="mt-1 text-sm text-slate-500">
-                    {activePage === "display" && "Atur tema & preferensi tampilan."}
-                    {activePage === "account" && "Pengaturan akun dan keamanan."}
                     {activePage === "faq" && "Pertanyaan yang sering ditanyakan."}
                     {activePage === "contact" && "Kirim pesan ke tim."}
                   </div>
@@ -130,78 +124,115 @@ export default function SettingPage() {
 
                 {/* Body scrollable */}
                 <div className="flex-1 min-h-0 overflow-auto p-6">
-                  {/* DISPLAY */}
-                  {activePage === "display" && (
-                    <div className="space-y-6">
-                      <div className="rounded-2xl bg-slate-50 p-5 ring-1 ring-slate-200">
-                        <div className="flex items-center justify-between gap-3">
-                          <div>
-                            <div className="text-sm font-extrabold text-slate-900">Theme Mode</div>
-                            <div className="text-xs text-slate-500">
-                              Ganti mode terang / gelap
-                            </div>
-                          </div>
+                  {/* FAQ */}
+                  {activePage === "faq" && (
+                    <div className="space-y-4">
+                      {[
+                        {
+                          q: "What types of cleaning services do you offer?",
+                          a:
+                            "We offer a range of services, including residential cleaning, deep cleaning, move-in/move-out cleaning, and seasonal deep cleaning.",
+                        },
+                        {
+                          q: "Are your cleaning products eco-friendly?",
+                          a:
+                            "Yes, we use environmentally safe products to ensure your home stays clean without harming the planet.",
+                        },
+                        {
+                          q: "How do I schedule a cleaning service?",
+                          a:
+                            "You can book through our website or contact our support team to arrange an appointment.",
+                        },
+                        {
+                          q: "Do I need to be home during the cleaning?",
+                          a:
+                            "No, it's optional. You may provide access instructions to our team.",
+                        },
+                        {
+                          q: "What if I'm not satisfied with the cleaning?",
+                          a:
+                            "We provide a satisfaction guarantee. Contact us within 24 hours, and we'll re-clean the area for free.",
+                        },
+                      ].map((it, idx) => (
+                        <details
+                          key={idx}
+                          className="rounded-2xl bg-white p-5 ring-1 ring-slate-200 open:ring-slate-300"
+                        >
+                          <summary className="cursor-pointer text-sm font-extrabold text-slate-900">
+                            {it.q}
+                          </summary>
+                          <p className="mt-3 text-sm text-slate-600 leading-relaxed">{it.a}</p>
+                        </details>
+                      ))}
+                    </div>
+                  )}
 
-                          <button
-                            id="toggleMode"
-                            type="button"
-                            onClick={toggleTheme}
-                            className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-bold text-white hover:opacity-90"
-                          >
-                            {themeBtnText}
-                          </button>
+                  {/* CONTACT */}
+                  {activePage === "contact" && (
+                    <div className="grid gap-6 lg:grid-cols-2">
+                      <div className="rounded-2xl bg-slate-50 p-6 ring-1 ring-slate-200">
+                        <div className="inline-flex items-center gap-2 rounded-xl bg-white px-3 py-2 text-sm font-extrabold ring-1 ring-slate-200">
+                          <i className="ri-mail-line" />
+                          Contact Us
                         </div>
 
-                        <div className="mt-4 grid grid-cols-2 gap-3">
-                          <label className="cursor-pointer">
-                            <input
-                              type="radio"
-                              name="theme"
-                              checked={theme === "light"}
-                              onChange={() => setTheme("light")}
-                              className="hidden"
-                            />
-                            <div
-                              className={[
-                                "rounded-2xl p-4 ring-1 transition",
-                                theme === "light"
-                                  ? "bg-white ring-slate-300"
-                                  : "bg-white/60 ring-slate-200 hover:ring-slate-300",
-                              ].join(" ")}
-                            >
-                              <div className="flex items-center gap-2 font-bold">
-                                <i className="ri-sun-line" />
-                                Light Mode
-                              </div>
-                              <div className="mt-1 text-xs text-slate-500">
-                                Tampilan terang (default)
-                              </div>
-                            </div>
-                          </label>
+                        <p className="mt-4 text-sm text-slate-600">
+                          Interested in working together? Fill out the Project Inquiry form
+                        </p>
 
-                          <label className="cursor-pointer">
-                            <input
-                              type="radio"
-                              name="theme"
-                              checked={theme === "dark"}
-                              onChange={() => setTheme("dark")}
-                              className="hidden"
-                            />
-                            <div
-                              className={[
-                                "rounded-2xl p-4 ring-1 transition",
-                                theme === "dark"
-                                  ? "bg-white ring-slate-300"
-                                  : "bg-white/60 ring-slate-200 hover:ring-slate-300",
-                              ].join(" ")}
-                            >
-                              <div className="flex items-center gap-2 font-bold">
-                                <i className="ri-moon-line" />
-                                Dark Mode
-                              </div>
-                              <div className="mt-1 text-xs text-slate-500">
-                                Aktifkan mode gelap
-                              </div>
+                        <div className="mt-5 space-y-2 text-sm text-slate-700">
+                          <div><b>TIme Capsule Group</b></div>
+                          <div>Ketintang Surabaya East Java Indonesia</div>
+                          <div>Timecapsule@gmail.com</div>
+                          <div>+6281359264810</div>
+                        </div>
+                      </div>
+
+                      <form
+                        className="rounded-2xl bg-white p-6 ring-1 ring-slate-200"
+                        id="contactForm"
+                        onSubmit={handleContactSubmit}
+                      >
+                        <div className="space-y-4">
+                          <input
+                            type="text"
+                            id="name"
+                            placeholder="Name"
+                            className="w-full rounded-xl bg-slate-50 px-4 py-3 text-sm ring-1 ring-slate-200 outline-none focus:ring-slate-300"
+                          />
+                          <input
+                            type="email"
+                            id="email"
+                            placeholder="Email"
+                            className="w-full rounded-xl bg-slate-50 px-4 py-3 text-sm ring-1 ring-slate-200 outline-none focus:ring-slate-300"
+                          />
+                          <input
+                            type="text"
+                            id="subject"
+                            placeholder="Subject"
+                            className="w-full rounded-xl bg-slate-50 px-4 py-3 text-sm ring-1 ring-slate-200 outline-none focus:ring-slate-300"
+                          />
+                          <textarea
+                            id="message"
+                            placeholder="Message"
+                            className="min-h-[140px] w-full rounded-xl bg-slate-50 px-4 py-3 text-sm ring-1 ring-slate-200 outline-none focus:ring-slate-300"
+                          />
+                          <button
+                            type="submit"
+                            id="send-btn"
+                            className="w-full rounded-xl bg-slate-900 px-4 py-3 text-sm font-extrabold text-white hover:opacity-90"
+                          >
+                            SEND
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+                  )}
+                </div>
+                    <div className="space-y-6">
+                      <div className="rounded-2xl bg-slate-50 p-5 ring-1 ring-slate-200">
+                      FAQ */}
+                  {activePage === "faq" && (
                             </div>
                           </label>
                         </div>

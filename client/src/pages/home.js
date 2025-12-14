@@ -63,25 +63,6 @@ export default function Feed() {
     <div>
       <Navbar />
 
-      {/* SEARCH */}
-      <div className="search-row">
-        <input
-          type="text"
-          placeholder="Explore your story..."
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
-        <button className="search-btn" type="button">
-          <i className="ri-search-line" style={{ color: "#2d2e30" }} />
-        </button>
-
-        <a href="#">
-          <button className="upload-btn" type="button">
-            <i className="ri-upload-line" style={{ color: "#151a1e" }} /> Upload
-          </button>
-        </a>
-      </div>
-
       {/* LAYOUT */}
       <div className="container">
         {/* LEFT: TOPIC */}

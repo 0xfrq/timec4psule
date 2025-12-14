@@ -65,6 +65,13 @@ export default function Future() {
           </div>
 
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => navigate(-1)}
+              className="inline-flex items-center gap-2 rounded-full bg-slate-200 px-4 py-2 text-sm font-extrabold text-slate-900 hover:bg-slate-300"
+            >
+              <i className="ri-arrow-left-line" />
+              Back
+            </button>
             <Link
               to="/feed"
               className="rounded-full bg-[#5c8df0] px-4 py-2 text-sm font-extrabold text-white hover:brightness-110"
