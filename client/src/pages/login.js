@@ -58,13 +58,6 @@ export default function Login() {
 
   return (
     <>
-      <i
-        id="themeToggle"
-        className={themeIconClass}
-        onClick={() => setTheme((t) => (t === "light" ? "dark" : "light"))}
-        role="button"
-        tabIndex={0}
-      />
 
       <div className="card">
         <div className="logo">
