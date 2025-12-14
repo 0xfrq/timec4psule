@@ -102,26 +102,26 @@ export default function Timeline() {
             <TimeCard
               title="PAST"
               subText="Past Years"
-              videoSrc="/video/pastt.mp4"
+              videoSrc="https://api.timecapsule.biz.id/public/video/pastt.mp4"
               active={active === "past"}
-              onClick={() => openFullscreenVideo("past", "/Past", "/video/pastt.mp4")}
+              onClick={() => openFullscreenVideo("past", "/Past", "https://api.timecapsule.biz.id/public/video/pastt.mp4")}
             />
 
             <TimeCard
               title="PRESENT"
               subText="Current Year"
-              videoSrc="/video/pre.mp4"
+              videoSrc="https://api.timecapsule.biz.id/public/video/pre.mp4"
               active={active === "present"}
-              onClick={() => openFullscreenVideo("present", "/Curent", "/video/pre.mp4")}
+              onClick={() => openFullscreenVideo("present", "/Curent", "https://api.timecapsule.biz.id/public/video/pre.mp4")}
               accent="yellow"
             />
 
             <TimeCard
               title="FUTURE"
               subText="Future Years"
-              videoSrc="/video/ftr.mp4"
+              videoSrc="https://api.timecapsule.biz.id/public/video/ftr.mp4"
               active={active === "future"}
-              onClick={() => openFullscreenVideo("future", "/Future", "/video/ftr.mp4")}
+              onClick={() => openFullscreenVideo("future", "/Future", "https://api.timecapsule.biz.id/public/video/ftr.mp4")}
             />
           </div>
         </div>

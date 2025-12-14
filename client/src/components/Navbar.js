@@ -18,8 +18,8 @@ export default function Navbar() {
       </div>
 
       <div className="nav-buttons">
-        <Link to="/feed">
-          <button className={`btn1 ${isActive("/feed") ? "active-nav" : ""}`}>
+        <Link to="/timeline">
+          <button className={`btn1 ${isActive("/timeline") ? "active-nav" : ""}`}>
             Home
           </button>
         </Link>
