@@ -1,0 +1,369 @@
+/* ====== GLOBAL RESET ====== */
+*{ box-sizing:border-box; }
+html, body, #root { height: 100%; }
+
+body{
+  margin:0;
+  font-family: Inter, system-ui, Arial;
+  -webkit-font-smoothing: antialiased;
+  background:#ffffff;
+  color:#222;
+  overflow-x:hidden;
+}
+
+/* ====== ukuran global feed (✅ lebih panjang) ====== */
+:root{
+  /* ✅ lebih panjang dari sebelumnya */
+  --feedH: calc(100vh - 92px - 22px - 22px);
+  /* fallback jika layar terlalu kecil */
+  --feedMin: 760px;
+}
+
+@media (max-height: 900px){
+  :root{
+    /* ✅ kalau layar pendek, tetap panjang tapi aman */
+    --feedH: 780px;
+  }
+}
+
+/* biar button/link enak */
+button{ font-family: inherit; }
+a{ text-decoration: none; color: inherit; }
+
+/* ====== TOPBAR ====== */
+.topbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:18px 24px;
+  background: linear-gradient(90deg,#e7efff 0%, #dfe9fb 100%);
+  border-bottom:1px solid rgba(0,0,0,0.04);
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  width: 100%;
+}
+
+.nav-buttons{
+  display:flex;
+  gap:10px;
+}
+
+.nav-buttons button{
+  border:0;
+  padding:8px 14px;
+  border-radius:8px;
+  font-weight:600;
+  cursor:pointer;
+  background:#5c8df0;
+  color:white;
+  box-shadow:0 4px 8px rgba(79,115,207,0.18);
+}
+
+/* ====== SEARCH ROW ====== */
+.search-row{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:12px;
+  margin:22px 0;
+  padding: 0 16px;
+}
+
+.search-row input{
+  width:320px;
+  max-width: 100%;
+  padding:11px 14px;
+  border-radius:10px;
+  border:1px solid #ccc;
+  outline:none;
+}
+
+.search-btn{
+  padding:11px 14px;
+  border-radius:10px;
+  border:0;
+  background:#ffcc00;
+  cursor:pointer;
+}
+
+.search-btn:hover{
+  background-color:#5c8df0;
+  color:#fff;
+}
+
+.upload-btn{
+  padding:11px 14px;
+  border-radius:10px;
+  background:#5c8df0;
+  cursor:pointer;
+  border:1px solid #5c8df0;
+  color:#fff;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.upload-btn i{ color:#fff; }
+
+.upload-btn:hover{
+  background-color:#355fd6;
+  border-color:#355fd6;
+}
+
+/* ====== GRID CONTAINER ====== */
+.container{
+  width:90%;
+  margin:0 auto 40px auto;
+  display:grid;
+  grid-template-columns: 0.9fr 1.6fr 1.1fr;
+  gap:36px;
+  align-items:start;
+
+  /* ✅ biar middle kolom scroll aman */
+  min-height: calc(100vh - 72px - 22px - 22px);
+}
+
+.feed-page .feed-grid{
+  grid-template-columns: 0.9fr 2.6fr 0.9fr; /* tengah (video) paling lebar */
+  max-width: none;
+  width: 96%;
+}
+
+
+/* ✅ penting untuk overflow di grid */
+.container > *{ min-height: 0; }
+
+/* ====== CARD ====== */
+.card{
+  background:#fff;
+  border-radius:14px;
+  padding:22px;
+  box-shadow:0 4px 14px rgba(0,0,0,0.10);
+}
+
+/* ✅ Topic & Comment minimal setinggi video feed */
+.card.topic,
+.card.comments{
+  min-height: max(var(--feedH), var(--feedMin));
+}
+
+/* LEFT TOPIC */
+.topic-badge{
+  background:#5c8df0;
+  padding:6px 14px;
+  border-radius:10px;
+  color:#fff;
+  display:inline-block;
+  margin-bottom:12px;
+}
+
+.detail{
+  background:#ffcb30;
+  padding:6px 12px;
+  border-radius:8px;
+  display:inline-block;
+  margin:12px 0;
+  font-weight:600;
+}
+
+.topic-text{
+  margin-top:12px;
+  font-size:14px;
+  line-height:1.5;
+}
+
+/* ====== VIDEO FEED ====== */
+.video-feed{
+  height: max(var(--feedH), var(--feedMin)); /* ✅ paksa lebih panjang */
+  overflow-y:auto;
+  overflow-x:hidden;
+  padding-right:10px;
+
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  min-height: 0;
+}
+
+/* ✅ video card dibuat jauh lebih tinggi */
+.video-card{
+  position:relative;
+  margin-bottom:34px;
+  background:#000;
+  border-radius:18px;
+  overflow:hidden;
+
+  /* ✅ ini yang bikin frame lebih panjang */
+  height: 620px;
+}
+
+/* ✅ videonya ikut memenuhi frame */
+.video-card video{
+  width:100%;
+  height:100%;
+  display:block;
+  object-fit:cover; /* ✅ biar penuh dan cakep */
+}
+
+/* actions */
+.video-actions{
+  position:absolute;
+  right:10px;
+  top:50%;
+  transform:translateY(-50%);
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+/* tombol icon kecil */
+.act-btn{
+  background:#fff;
+  width:36px;
+  height:36px;
+  border-radius:50%;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  cursor:pointer;
+  box-shadow:0 3px 8px rgba(0,0,0,0.18);
+  border:0;
+  padding:0;
+}
+
+.act-btn i{
+  font-size:18px;
+  line-height:1;
+}
+
+.video-caption{
+  position:absolute;
+  bottom:14px;
+  left:16px;
+  right: 60px;
+  color:#fff;
+  text-shadow:0 2px 4px rgba(0,0,0,0.5);
+}
+
+.video-caption .title{
+  font-weight:700;
+  font-size:16px;
+}
+
+.video-caption .caption-text{
+  margin-top:6px;
+  font-size:13px;
+  line-height:1.35;
+}
+
+/* ====== COMMENTS ====== */
+.comment-title{
+  background:#ffcb30;
+  padding:8px 18px;
+  display:inline-block;
+  border-radius:8px;
+  color:#000;
+  font-weight:800;
+  margin-bottom:18px;
+}
+
+.comment{
+  display:flex;
+  gap:14px;
+  margin-bottom:16px;
+}
+
+.avatar{
+  width:42px;
+  height:42px;
+  background:#ffb84d;
+  border-radius:50%;
+  flex: 0 0 auto;
+}
+.comment-input{
+  display:flex;
+  margin-top:14px;
+  width:100%;
+}
+
+.comment-input input{
+  flex: 1 1 auto;        /* ✅ input selalu ambil sisa ruang */
+  min-width: 0;          /* ✅ penting di flex biar ga “hilang” */
+  padding:11px 12px;
+  border-radius:10px 0 0 10px;
+  border:1px solid #ccc;
+  outline:none;
+}
+
+.send-btn{
+  flex: 0 0 auto;        /* ✅ tombol tidak maksa input mengecil */
+  min-width: 56px;       /* ✅ minimal terlihat */
+  padding: 0 16px;
+  background:#5c8df0;
+  border:0;
+  color:#fff;
+  border-radius:0 10px 10px 0;
+  cursor:pointer;
+}
+
+/* ====== RESPONSIVE ====== */
+@media (max-width: 1200px){
+  .container{
+    grid-template-columns: 1fr 1.4fr 1fr;
+    gap:26px;
+  }
+
+  /* ✅ tetap panjang tapi sedikit turun */
+  .video-card{ height: 560px; }
+}
+
+@media (max-width: 1024px){
+  .container{
+    grid-template-columns: 1fr;
+    width: 94%;
+    gap:18px;
+    min-height:auto;
+  }
+
+  :root{
+    --feedH: 620px;
+    --feedMin: 620px;
+  }
+
+  .video-feed{
+    height: var(--feedH);
+  }
+
+  .card.topic,
+  .card.comments{
+    min-height: auto;
+  }
+
+  .video-card{ height: 620px; }
+  .send-btn{ width: 30%; }
+}
+
+@media (max-width: 480px){
+  .search-row{
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .search-row input{
+    width: 100%;
+  }
+
+  .upload-btn{
+    width: 100%;
+    justify-content:center;
+  }
+
+  /* ✅ di HP tetap panjang tapi aman */
+  .video-card{ height: 540px; }
+
+  .send-btn{ width: 40%; }
+}

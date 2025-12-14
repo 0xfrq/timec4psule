@@ -1,0 +1,108 @@
+[
+  {
+    "domain": ".grok.com",
+    "expiry": 1798456062,
+    "httpOnly": false,
+    "name": "_ga_8FEWB057YH",
+    "path": "/",
+    "sameSite": "Lax",
+    "secure": false,
+    "value": "GS2.1.s1763895984$o1$g1$t1763896062$j60$l0$h0"
+  },
+  {
+    "domain": ".grok.com",
+    "httpOnly": false,
+    "name": "x-userid",
+    "path": "/",
+    "sameSite": "None",
+    "secure": true,
+    "value": "62b8bacb-dedc-4b7c-8ce1-2705e369e96f"
+  },
+  {
+    "domain": ".grok.com",
+    "expiry": 1795432088,
+    "httpOnly": false,
+    "name": "mp_ea93da913ddb66b6372b89d97b1029ac_mixpanel",
+    "path": "/",
+    "sameSite": "Lax",
+    "secure": false,
+    "value": "%7B%22distinct_id%22%3A%2262b8bacb-dedc-4b7c-8ce1-2705e369e96f%22%2C%22%24device_id%22%3A%2210049443-13dd-41a2-8b7b-661d4370386f%22%2C%22%24initial_referrer%22%3A%22%24direct%22%2C%22%24initial_referring_domain%22%3A%22%24direct%22%2C%22__mps%22%3A%7B%7D%2C%22__mpso%22%3A%7B%7D%2C%22__mpus%22%3A%7B%7D%2C%22__mpa%22%3A%7B%7D%2C%22__mpu%22%3A%7B%7D%2C%22__mpr%22%3A%5B%5D%2C%22__mpap%22%3A%5B%5D%2C%22%24user_id%22%3A%2262b8bacb-dedc-4b7c-8ce1-2705e369e96f%22%7D"
+  },
+  {
+    "domain": ".grok.com",
+    "expiry": 1779448053,
+    "httpOnly": true,
+    "name": "sso-rw",
+    "path": "/",
+    "sameSite": "Strict",
+    "secure": true,
+    "value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzZXNzaW9uX2lkIjoiOGY5ZDgwYjQtYWM1MC00OGJhLTgyZDktODAyYWUxN2FlNTE0In0.1iSDSS4FLW3RrFOa8pEe0Z7eiXRp8gi7YyrWI1Cvn1E"
+  },
+  {
+    "domain": ".grok.com",
+    "expiry": 1779448053,
+    "httpOnly": true,
+    "name": "sso",
+    "path": "/",
+    "sameSite": "Lax",
+    "secure": true,
+    "value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzZXNzaW9uX2lkIjoiOGY5ZDgwYjQtYWM1MC00OGJhLTgyZDktODAyYWUxN2FlNTE0In0.1iSDSS4FLW3RrFOa8pEe0Z7eiXRp8gi7YyrWI1Cvn1E"
+  },
+  {
+    "domain": ".grok.com",
+    "httpOnly": false,
+    "name": "x-anonuserid",
+    "path": "/",
+    "sameSite": "Lax",
+    "secure": false,
+    "value": "850c7710-15bc-40e6-893c-3c50f07f7765"
+  },
+  {
+    "domain": ".grok.com",
+    "expiry": 1795431986,
+    "httpOnly": true,
+    "name": "cf_clearance",
+    "path": "/",
+    "sameSite": "None",
+    "secure": true,
+    "value": "6D1cshbhUZZnDu.GNmiwVBWgPWiX1S7q8oCDFCLOodk-1763895986-1.2.1.1-PiQ6aejQHawa2rhB7U8ltSQ2EsYWe_WaFsnsAFq0BayyE0OLav7G_I0kecqjiuQzmrEVmWvzImgMtV2ClAY3fGqT.UHbD7r6zRPPAkeZzSUdRQ40eZf3WI_bN5vgmSyYW27yCjI0gmVgsST6hlZIeYczmAXaQy8aQ3hDqXHe5jd3kzIYlg0OUxDQzOA0GFfeOSUnZuXWyezPMYPOhSPK72Kj1MTmRLn.H.rZZoHgcNY"
+  },
+  {
+    "domain": "grok.com",
+    "expiry": 1795432062,
+    "httpOnly": false,
+    "name": "i18nextLng",
+    "path": "/",
+    "sameSite": "Strict",
+    "secure": false,
+    "value": "en"
+  },
+  {
+    "domain": ".grok.com",
+    "httpOnly": false,
+    "name": "x-signature",
+    "path": "/",
+    "sameSite": "Lax",
+    "secure": false,
+    "value": "46VXIXWp9MYs3A%2FeiRcXpr39aP7TYqxOjkGIQpwNIeJVpRSkXeqpcnGXLsUEWWTjHM0QylCPakMhHb3cWzv8jg%3D%3D"
+  },
+  {
+    "domain": ".grok.com",
+    "httpOnly": false,
+    "name": "x-challenge",
+    "path": "/",
+    "sameSite": "Lax",
+    "secure": false,
+    "value": "E%2BmCKztH42CxC65Va%2FofHg5E8j8w%2BJOfPgE8zEVo0MdQE%2F7l4AsiU0Sc6OJri7aUVdinGL%2FUEkeABh1IFu0cFemJLt8E7FXWBFHsxoSYM6sSMRwPOaD6E%2Fk3kboA7u680jzfrsXg7lANQyjbFGyZ8dEr0qSeFcEdeG4Ff1qhSMbKwqPMA%2FQ%3D"
+  },
+  {
+    "domain": ".grok.com",
+    "expiry": 1798456062,
+    "httpOnly": false,
+    "name": "_ga",
+    "path": "/",
+    "sameSite": "Lax",
+    "secure": false,
+    "value": "GA1.1.503169543.1763895985"
+  }
+]
