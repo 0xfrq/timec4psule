@@ -1,2 +1,35 @@
 *.mp4
 /server/imagegen/grok_cookies*
+.env
+
+# ========================
+# ENV FILES
+# ========================
+.env
+client/.env
+server/.env
+
+# ========================
+# DATABASE
+# ========================
+server/db.sqlite3
+
+# ========================
+# PYTHON CACHE
+# ========================
+__pycache__/
+*.pyc
+
+# ========================
+# DJANGO
+# ========================
+*.log
+media/
+staticfiles/
+
+# ========================
+# NODE / CLIENT
+# ========================
+node_modules/
+dist/
+build/
